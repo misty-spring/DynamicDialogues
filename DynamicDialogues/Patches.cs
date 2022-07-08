@@ -7,8 +7,10 @@ namespace DynamicDialogues
     {
         public static bool SayHiTo_Prefix(ref NPC __instance, Character c)
         {
-            var mainAndRef = (__instance, c as NPC);
-            var refAndMain = (c as NPC, __instance);
+            var instancename =__instance.Name; 
+            var cname = (c as NPC).Name;
+            var mainAndRef = (instancename, cname);
+            var refAndMain = (cname, instancename);
 
             try
             {

@@ -31,36 +31,6 @@ namespace DynamicDialogues
 
         private void SaveLoaded(object sender, SaveLoadedEventArgs e)
         {
-            /* Only uncomment if having formatting issues
-             * This will print a template of RawDialogue[], and one of the supposed dictionary.
-             * (GreetingTemplate doesn't need a template, because its just strings)
-             
-            this.Helper.Data.WriteJsonFile("RawDialogue.json", new RawDialogues());
-
-            Dictionary<string, RawDialogues[]> dictTemplate = new();
-            dictTemplate.Add("NAME", new RawDialogues[1] { new RawDialogues() });
-            dictTemplate.Add("NAME2", new RawDialogues[2] { new RawDialogues(), new RawDialogues()});
-            this.Helper.Data.WriteJsonFile("DialogueTemplate.json", dictTemplate);
-
-            //another test, with written data
-            RawDialogues[] test = new[] { new RawDialogues("test") };
-            DialogueRaw.Add("TEST", test);
-            DialogueRaw.Add("TEST2", test);
-            this.Helper.Data.WriteJsonFile<Dictionary<string, RawDialogues[]>>("FromDS.json", DialogueRaw);
-
-            //another type of test. writes list with data
-            var data = new Dictionary<string, List<RawDialogues>>();
-            var temp = new RawDialogues("template");
-            var one = new List<RawDialogues>();
-            one.Add(temp);
-            var two = one;
-            two.Add(temp);
-            two.Add(temp);
-            data.Add("NAME", one);
-            data.Add("NAME2", two);
-            this.Helper.Data.WriteJsonFile<Dictionary<string, List<RawDialogues>>>("FromAssetReqL.json", data);
-            */
-
             var allNPCs = this.Helper.GameContent.Load<Dictionary<string, string>>("Data\\NPCDispositions");
 
             // For each string: Check if it's in NPC friendship list, to not cause errors with locked/unmet NPCs.
@@ -128,13 +98,14 @@ namespace DynamicDialogues
                 foreach (var d in patch.Value)
                 {
                     //"conditional" variable checks if patch has already been added. if so, returns. if not (and conditions apply), adds it to patch so it won't be re-checked.
-                    var conditional = (patch.Key.Name, d.Time, d.Location?.ToString());
+                    var conditional = (patch.Key, d.Time, d.Location?.ToString());
                     if((bool)(AlreadyPatched?.Contains(conditional)))
                     {
                         continue;
                     }
 
-                    if (d.Time.Equals(e.NewTime) || InRequiredLocation(patch.Key, d.Location))
+                    var chara = Game1.getCharacterFromName(patck.Key);
+                    if (d.Time.Equals(e.NewTime) || InRequiredLocation(chara, d.Location))
                     {
                         /* Extra options: 
                          * if any emote, do it. 
@@ -144,44 +115,44 @@ namespace DynamicDialogues
                          */
                         if (d.Emote >= 0)
                         {
-                            this.Monitor.Log($"Doing emote for {patch.Key.Name}. Index: {d.Emote}");
-                            patch.Key.doEmote(d.Emote);
+                            this.Monitor.Log($"Doing emote for {patch.Key}. Index: {d.Emote}");
+                            chara.doEmote(d.Emote);
                         }
                         if (d.Shake > 0)
                         {
-                            this.Monitor.Log($"Shaking {patch.Key.Name} for {d.Shake} milliseconds.");
-                            patch.Key.shake(d.Shake);
+                            this.Monitor.Log($"Shaking {patch.Key} for {d.Shake} milliseconds.");
+                            chara.shake(d.Shake);
                         }
                         if (d.Jump)
                         {
-                            this.Monitor.Log($"{patch.Key.Name} will jump..");
-                            patch.Key.jump();
+                            this.Monitor.Log($"{patch.Key} will jump..");
+                            chara.jump();
                         }
                         if(d.FaceDirection != -1)
                         {
-                            this.Monitor.Log($"Changing {patch.Key.Name} facing direction to {d.FaceDirection}.");
-                            patch.Key.faceDirection(d.FaceDirection);
+                            this.Monitor.Log($"Changing {patch.Key} facing direction to {d.FaceDirection}.");
+                            chara.faceDirection(d.FaceDirection);
                         }
 
                         /* If its supposed to be a bubble, put the dialogue there. If not, proceed as usual. */
                         if (d.IsBubble)
                         {
                             this.Monitor.Log($"Adding text as bubble.");
-                            patch.Key.showTextAboveHead(FormatBubble(d.Dialogue));
+                            chara.showTextAboveHead(FormatBubble(d.Dialogue));
                         }
                         else
                         {
                             //if the user wants to override current dialogue, this will do it.
                             if (d.Override)
                             {
-                                this.Monitor.Log($"Clearing {patch.Key.Name} dialogue.");
-                                patch.Key.CurrentDialogue.Clear();
+                                this.Monitor.Log($"Clearing {patch.Key} dialogue.");
+                                chara.CurrentDialogue.Clear();
                             }
 
                             //set new dialogue, log to trace
-                            patch.Key.setNewDialogue(d.Dialogue, true, d.ClearOnMove);
+                            chara.setNewDialogue(d.Dialogue, true, d.ClearOnMove);
                         }
-                        this.Monitor.Log($"Adding dialogue for {patch.Key} at {e.NewTime}, in {patch.Key.currentLocation}");
+                        this.Monitor.Log($"Adding dialogue for {patch.Key} at {e.NewTime}, in {chara.currentLocation}");
 
                         /* List is checked daily, but removing causes errors in the foreach loop.
                          * So, there'll be a list with today's already added values (tuple of NPC name, time, location)
@@ -237,7 +208,8 @@ namespace DynamicDialogues
             foreach (var singular in CompatRaw)
             {
                 this.Monitor.Log($"Checking patch for NPC {singular.Key}...");
-                NPC nameof = Compat.GetName(singular.Key);
+                //NPC nameof = Compat.GetName(singular.Key);
+                var nameof = singular.Key;
                 if (Exists(nameof))
                 {
                     var dialogueInfo = singular.Value;
@@ -248,7 +220,7 @@ namespace DynamicDialogues
                     else if (Compat.IsValidAndAddable(dialogueInfo, nameof))
                     {
                         this.Monitor.Log($"Dialogue for {singular.Key} parsed successfully. Adding to dictionary");
-                        var data = new ParsedDialogues(dialogueInfo);
+                        var data = dialogueInfo;
 
                         if ((bool)(Dialogues?.ContainsKey(nameof)))
                         {
@@ -256,7 +228,7 @@ namespace DynamicDialogues
                         }
                         else
                         {
-                            var list = new List<ParsedDialogues>();
+                            var list = new List<RawDialogues>();
                             list.Add(data);
                             Dialogues.Add(nameof, list);
                         }
@@ -280,7 +252,8 @@ namespace DynamicDialogues
             foreach (var singular in DialogueRaw)
             {
                 this.Monitor.Log($"Checking patch for NPC {singular.Key}...");
-                var nameof = Game1.getCharacterFromName(singular.Key);
+                //var nameof = Game1.getCharacterFromName(singular.Key);
+                var nameof = singular.Key;
 
                 if (Exists(nameof))
                 {
@@ -294,7 +267,8 @@ namespace DynamicDialogues
                         this.Monitor.Log($"Dialogue for {singular.Key} parsed successfully. Adding to dictionary");
                         try
                         {
-                            Dialogues.Add(nameof, GetParseds(dialogueInfo));
+                            //Dialogues.Add(nameof, GetParseds(dialogueInfo));
+                            Dialogues.Add(nameof, dialogueInfo);
                         }
                         catch (Exception ex)
                         {
@@ -320,8 +294,8 @@ namespace DynamicDialogues
         }
 
         /* Required by mod to work */
-        internal static Dictionary<NPC, List<ParsedDialogues>> Dialogues { get; private set; } = new();
-        internal static Dictionary<(NPC, NPC), string> Greetings { get; private set; } = new();
+        internal static Dictionary<string, List<RawDialogues>> Dialogues { get; private set; } = new();
+        internal static Dictionary<(string, string), string> Greetings { get; private set; } = new();
 
         internal static List<string> AdmittedNPCs { get; private set; } = new();
         internal static List<(string, int, string)> AlreadyPatched = new();

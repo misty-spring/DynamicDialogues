@@ -30,7 +30,23 @@ namespace DynamicDialogues
                 return false;
             }
         }
-
+        internal static bool InRequiredLocation(string who, GameLocation place)
+        {
+            var npc = Game1.getCharacterFromName(who);
+            
+            if (npc.currentLocation == place)
+            {
+                return true;
+            }
+            else if (place is null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         
         /// <summary>
         /// For validating user additions. Passes the values to another bool, then returns that result.
