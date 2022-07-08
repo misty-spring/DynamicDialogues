@@ -6,19 +6,12 @@ namespace DynamicDialogues
 {
     /*
      * impl. ideas:
-     * - change facedirection
-     * - emote
      * - face towards farmer
      * - wait to stop moving before applying dialogue
      *      (smth like :
      *          ApplyWhenMoving defaulting to true,
      *          or WaitToStopMoving which defaults to false
      *      )
-     * - shake (originally a (bool, int). duration hardcoded (in my mod) to 1sec??)
-     *      (maybe make it int that defaults to 0,
-     *      if user int is greater than that perform shake w/ the int
-     *      and if not, just do nothing abt it)
-     * 
      * I may (or may not) add these in the future
      */
 
@@ -28,17 +21,23 @@ namespace DynamicDialogues
     internal class RawDialogues
     {
         /* maybe edit this so ints are actually ints and same with bools. in the case that CP auto-converts them */
-        public string Time { get; set; } = "any";
+        public int Time { get; set; } = -1;
         public string Location { get; set; } = "any";
 
-        public string Dialogue { get; set; }
-        public string ClearOnMove { get; set; } = "false";
-        public string Override { get; set; } = "false";
+        public string Dialogue { get; set; } = null;
+        public bool ClearOnMove { get; set; } = false;
+        public bool Override { get; set; } = false;
 
-        public string IsBubble { get; set; } = "false";
-        public string Jump { get; set; } = "false";
-        public string Shake { get; set; } = "-1";
-        public string Emote { get; set; } = "-1";
+        public bool IsBubble { get; set; } = false;
+        public bool Jump { get; set; } = false;
+        public int Shake { get; set; } = -1;
+
+
+        public bool MakeEmote { get; set; } = false;
+        public int Emote { get; set; } = -1;
+
+        public bool ChangeFacing { get; set; } = false;
+        public int FaceDirection { get; set; } = -1;
 
         public RawDialogues()
         {
@@ -57,7 +56,25 @@ namespace DynamicDialogues
             Jump = md.Jump;
             Shake = md.Shake;
             Emote = md.Emote;
+            FaceDirection = md.FaceDirection;
         }
+#if DEBUG
+        public RawDialogues(string word)
+        {
+            Time = (-1 * word.Length);
+            Location = $"{word} location";
+
+            Dialogue = $"{word} dialogue";
+            ClearOnMove = false;
+            Override = false;
+
+            IsBubble = false;
+            Jump = false;
+            Shake = (1 * word.Length);
+            Emote = (1 * word.Length);
+            FaceDirection = -1;
+        }
+#endif
     }
 
     /// <summary>
@@ -76,6 +93,7 @@ namespace DynamicDialogues
         public bool Jump { get; set; } = false;
         public int Shake { get; set; } = -1;
         public int Emote { get; set; } = -1;
+        public int FaceDirection { get; set; } = -1;
 
         public ParsedDialogues()
         {
@@ -83,19 +101,38 @@ namespace DynamicDialogues
 
         public ParsedDialogues(RawDialogues md)
         {
-            Time = GetTime(md.Time);
+            Time = TimeOrNeg(md.Time);
             Location = GetLocationOrNull(md.Location);
 
             Dialogue = md.Dialogue;
-            ClearOnMove = GetBool(md.ClearOnMove);
-            Override = GetBool(md.Override);
+            ClearOnMove = md.ClearOnMove;
+            Override = md.Override;
 
-            IsBubble = GetBool(md.IsBubble);
-            Jump = GetBool(md.Jump);
-            Shake = int.Parse(md.Shake);
-            Emote = int.Parse(md.Emote);
+            IsBubble = md.IsBubble;
+            Jump = md.Jump;
+            Shake = md.Shake;
+            Emote = IntOrNegative(md.Emote, md.MakeEmote);
+            FaceDirection = IntOrNegative(md.FaceDirection, md.ChangeFacing);
         }
 
+        private static int IntOrNegative(int value, bool enabled)
+        {
+            if(enabled)
+            {
+                return value;
+            }
+
+            return -1;
+        }
+        private static int TimeOrNeg(int time)
+        {
+            if(time >= 600)
+            {
+                return time;
+            }
+
+            return -1;
+        }
         public static int GetTime(string at)
         {
             if (at == "any" || string.IsNullOrWhiteSpace(at))

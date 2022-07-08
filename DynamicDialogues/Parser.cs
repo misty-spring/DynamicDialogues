@@ -31,6 +31,7 @@ namespace DynamicDialogues
             }
         }
 
+        
         /// <summary>
         /// For validating user additions. Passes the values to another bool, then returns that result.
         /// </summary>
@@ -56,35 +57,46 @@ namespace DynamicDialogues
         /// <returns></returns>
         internal static bool ReturnValidity(RawDialogues[] which)
         {
-            Dictionary<string, string> timeAndPlace = new();
+            Dictionary<int, string> timeAndPlace = new();
             var fix = which.ToList();
 
             foreach (var array in which)
             {
                 //the list is used just to get index, honestly.
                 int arrayPos = fix.IndexOf(array);
+                var time = array.Time;
 
-                if (array.IsBubble == "true" && array.Emote is not "-1")
+                //check if text is bubble and if emotes are allowed. if so return false
+                if (array.IsBubble == true && array.MakeEmote == true && array.Emote is not -1)
                 {
                     ModEntry.Mon.Log("Configs \"IsBubble\" and \"Emote\" are mutually exclusive (the two can't be applied at the same time). Patch will not be loaded.", LogLevel.Error);
                     return false;
                 }
-                if (array.Time == "any" && array.Location == "any")
+                
+                //if array time is greater than 0 and location is any, return false
+                if (time <= 0 && array.Location == "any")
                 {
                     ModEntry.Mon.Log($"You must either set an hour or a location. (Addition number {arrayPos})");
                     return false;
                 }
-                else
+                
+                //if time is greater than 0 but not allowed value, return false
+                else if (time > 0 && (time <= 600 || time >= 2600))
                 {
-                    int time = int.Parse(array.Time);
-
-                    if (time <= 600 || time >= 2600)
+                    ModEntry.Mon.Log($"Addition number {arrayPos} has a faulty hour!", LogLevel.Warn);
+                    return false;
+                }
+                
+                //if set to change facing, check value. if less than 0 and bigger than 3 return false
+                if(array.ChangeFacing == true)
+                {
+                    if (array.FaceDirection < 0 || array.FaceDirection > 3)
                     {
-                        ModEntry.Mon.Log($"Addition number {arrayPos} has a faulty hour!", LogLevel.Warn);
+                        ModEntry.Mon.Log($"Addition number {arrayPos} has a faulty facedirection! Value must be between 0 and 3.", LogLevel.Warn);
                         return false;
                     }
                 }
-                timeAndPlace.Add(array.Time, array.Location);
+                timeAndPlace.Add(time, array.Location);
             }
 
             var result = timeAndPlace.Count == timeAndPlace.Distinct().Count();
@@ -96,6 +108,7 @@ namespace DynamicDialogues
 
             return result;
         }
+        
         /// <summary>
         /// Check if NPC exists. If null or not in friendship data, returns false.
         /// </summary>
@@ -144,6 +157,7 @@ namespace DynamicDialogues
 
             return true;
         }
+       
         /// <summary>
         /// Checks validity of greeting patch (ie. existing NPC and dialogue)
         /// </summary>
@@ -165,6 +179,7 @@ namespace DynamicDialogues
 
             return true;
         }
+        
         /// <summary>
         /// Converts a raw list to its parsed equivalent.
         /// </summary>
@@ -192,7 +207,12 @@ namespace DynamicDialogues
 
             return result;
         }
-
+       
+        /// <summary>
+        /// Formats the bubble set by user. "@" is replaced by player name.
+        /// </summary>
+        /// <param name="which">The dialogue to check.</param>
+        /// <returns></returns>
         internal static string FormatBubble(string which)
         {
             string result = which;
