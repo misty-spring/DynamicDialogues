@@ -78,18 +78,12 @@ Greetings use a file called `mistyspring.dynamicdialogues/Greetings`.
 
 Template:
 ```
-{
-      "Action": "EditData",
-      "Target": "mistyspring.dynamicdialogues/Greetings",
-      "Entries": {
-        "nameOfNpc": {
+      "nameOfNpc": {
           "NpcA": "",
           "NpcB": "",
           "NpcC": ""
           //...etc. you can add for any and all NPCs
-        }
-      }
-    }
+        }    
 ```
 Example:
 
