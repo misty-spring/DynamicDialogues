@@ -23,6 +23,11 @@ This mod makes use of ContentPatcher to be edited.
 Every NPC has its own dialogue file- this is made by checking NPCDispositions when the save is loaded.
 So it's compatible with custom NPCs of any type.
 
+Notifs are all in a single file, and so are Greetings (see adding [notifs](#adding-notifications) or [greetings](#adding-greetings) for more info).
+
+If the NPC hasn't been unlocked yet (e.g kent or leo), their entries will be skipped until the player meets them.
+**Note:** ALL files are reloaded when the day starts.
+
 ### Adding dialogues
 To add dialogues, edit `mistyspring.dynamicdialogues/Dialogues/<namehere>`. 
 Each dialogue has a unique key to ensure multiple patches can exist.
@@ -70,6 +75,25 @@ Just remove any fields you won't be using. Example:
       }
     },
 ```
+**Note:** If you don't want the dialogue to appear every day, use CP's "When" field.
+Example:
+```
+{
+      "Action": "EditData",
+      "Target": "mistyspring.dynamicdialogues/Dialogues/Haley",
+      "Entries": {
+        "sunnyday": {
+          "Time": "1000",
+          "Dialogue": "It's so sunny today!",
+          "IsBubble": true
+        }
+      },
+      "When":{
+        "Weather":"sunny"
+      }
+    },
+```
+
 
 
 ### Adding greetings
@@ -113,7 +137,7 @@ Message | Message to display.
 IsBox | (Optional) If `true`, will make notification a box. 
 Sound | (Optional) Sound the notif will make, if any. ([see sound IDs](https://docs.google.com/spreadsheets/d/18AtLClQPuC96rJOC-A4Kb1ZkuqtTmCRFAKn9JJiFiYE))
 
-* = like with dialogues, you must either set a time, a dialogue, or both.
+* = like with dialogues, you must either set a time, a location, or both.
 
 Template:
 
@@ -142,6 +166,8 @@ Example:
     },
 
 ```
+**Note:** If you don't want the notif to appear every day, use CP's "When" field 
+(e.g only send when it rains, when you've got x hearts with a NPC, etc. All conditions are compatible).
 
 ## For more information
 You can send me any question via [nexusmods](https://www.nexusmods.com/users/130944333) or in here.
