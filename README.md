@@ -15,7 +15,8 @@ A framework which allows for dynamic dialogues throughout the day.
 - Custom npc dialogues throughout the day
   - Both of these are time and/or location dependant.
 - Custom greetings (when npcs say hi to each other)
-- Patchable via CP
+
+This mod makes use of ContentPatcher to be edited.
 
 ## How to use
 Every NPC has its own dialogue file- this is made by checking NPCDispositions when the save is loaded.
