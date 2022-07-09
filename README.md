@@ -27,16 +27,16 @@ Each dialogue has a unique key to ensure multiple patches can exist.
 
 name | description
 -----|------------
-Time | Time to set dialogue at. (Optional*)
-Location | Name of the map the NPC has to be in. (Optional*)
+Time | (*) Time to set dialogue at. 
+Location | (*) Name of the map the NPC has to be in. 
 Dialogue | The text to display.
-ClearOnMove | If `true` and dialogue isn't read, it'll disappear once the NPC moves. (Optional)
-Override | Removes any previous dialogue. (Optional)
-IsBubble | (`true`/`false`) Makes the dialogue a bubble over their head. (Optional)
-Jump | if `true`, NPC will jump. (Optional)
-Shake | Shake for the milliseconds stated (e.g Shake 1000 for 1 second). (Optional)
-Emote | Will display the emote at that index ([see list of emotes](https://www.reddit.com/r/StardewValley/comments/5s5m9g/help_annoyed_squiggle/ddd33qg/)) (Optional)
-FaceDirection | (`0` to `3` or `up`,`down`,etc) Changes NPC's facing direction.(Optional)
+ClearOnMove | (Optional) If `true` and dialogue isn't read, it'll disappear once the NPC moves. 
+Override | (Optional) Removes any previous dialogue.
+IsBubble | (Optional) `true`/`false`. Makes the dialogue a bubble over their head.
+Jump | (Optional) If `true`, NPC will jump. 
+Shake | (Optional) Shake for the milliseconds stated (e.g Shake 1000 for 1 second).
+Emote | (Optional) Will display the emote at that index ([see list of emotes](https://www.reddit.com/r/StardewValley/comments/5s5m9g/help_annoyed_squiggle/ddd33qg/))
+FaceDirection | (Optional) Changes NPC's facing direction. allowed values: `0` to `3` or `up`,`down`,`left`,`right`.
 
 *= You must either set a time or a location (or both) for the dialogue to load.
 
@@ -111,11 +111,11 @@ Notifications are loaded from `mistyspring.dynamicdialogues/Notifs`.
 
 name | description
 -----|------------ 
-Time | Time to add a notification at. (Optional*)
-Location | Name of map to display the notif in. (Optional*)
+Time | (*) Time to add a notification at.
+Location | (*) Name of map to display the notif in. 
 Message | Message to display. 
-IsBox | if `true`, will make notification a box. (Optional)
-Sound | sound the notif will make, if any. ([see sound IDs](https://docs.google.com/spreadsheets/d/18AtLClQPuC96rJOC-A4Kb1ZkuqtTmCRFAKn9JJiFiYE)) (Optional)
+IsBox | (Optional) If `true`, will make notification a box. 
+Sound | (Optional) Sound the notif will make, if any. ([see sound IDs](https://docs.google.com/spreadsheets/d/18AtLClQPuC96rJOC-A4Kb1ZkuqtTmCRFAKn9JJiFiYE))
 
 * = like with dialogues, you must either set a time, a dialogue, or both.
 
