@@ -37,7 +37,7 @@ Override | (Optional) Removes any previous dialogue.
 IsBubble | (Optional) `true`/`false`. Makes the dialogue a bubble over their head.
 Jump | (Optional) If `true`, NPC will jump. 
 Shake | (Optional) Shake for the milliseconds stated (e.g Shake 1000 for 1 second).
-Emote | (Optional) Will display the emote at that index ([see list of emotes](https://www.reddit.com/r/StardewValley/comments/5s5m9g/help_annoyed_squiggle/ddd33qg/))
+Emote | (Optional) Will display the emote at that index ([see list of emotes](https://docs.google.com/spreadsheets/d/18AtLClQPuC96rJOC-A4Kb1ZkuqtTmCRFAKn9JJiFiYE/edit#gid=693962458))
 FaceDirection | (Optional) Changes NPC's facing direction. allowed values: `0` to `3` or `up`,`down`,`left`,`right`.
 
 *= You must either set a time or a location (or both) for the dialogue to load.
