@@ -3,8 +3,8 @@
   "Author": "mistyspring",
   "Version": "1.0.0",
   "Description": "Framework which allows for more dynamic dialogues.",
-  "UniqueID": "mistyspring.dynamicdialogue",
+  "UniqueID": "mistyspring.dynamicdialogues",
   "EntryDll": "DynamicDialogues.dll",
   "MinimumApiVersion": "3.14.0",
-  "UpdateKeys": ["nexus:???"]
+  "UpdateKeys": ["nexus:12836"]
 }

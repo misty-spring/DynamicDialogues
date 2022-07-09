@@ -30,6 +30,23 @@ namespace DynamicDialogues
                 return false;
             }
         }
+        internal static bool InRequiredLocation(NPC who, string place)
+        {
+
+            if (who.currentLocation.Name == place)
+            {
+                return true;
+            }
+            else if (place is null || place is "any")
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         internal static bool InRequiredLocation(string who, GameLocation place)
         {
             var npc = Game1.getCharacterFromName(who);
@@ -53,78 +70,65 @@ namespace DynamicDialogues
         /// </summary>
         /// <param name="which">The raw dialogue data to check.</param>
         /// <returns></returns>
-        internal static bool IsValid(RawDialogues[] which)
+        internal static bool IsValid(RawDialogues data, string who) //rename to += dialogue
         {
             try
             {
-                return ReturnValidity(which);
-            }
-            catch (Exception ex)
-            {
-                ModEntry.Mon.Log($"Error found in contentpack: {ex}", StardewModdingAPI.LogLevel.Error);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Check raw data. If no errors are found, returns true.
-        /// </summary>
-        /// <param name="which">The raw data to check.</param>
-        /// <returns></returns>
-        internal static bool ReturnValidity(RawDialogues[] which)
-        {
-            Dictionary<int, string> timeAndPlace = new();
-            var fix = which.ToList();
-
-            foreach (var array in which)
-            {
-                //the list is used just to get index, honestly.
-                int arrayPos = fix.IndexOf(array);
-                var time = array.Time;
+                var time = data.Time;
 
                 //check if text is bubble and if emotes are allowed. if so return false
-                if (array.IsBubble == true && array.MakeEmote == true && array.Emote is not -1)
+                if (data.IsBubble == true && data.Emote is not -1) //removed: "data.MakeEmote == true && "
                 {
                     ModEntry.Mon.Log("Configs \"IsBubble\" and \"Emote\" are mutually exclusive (the two can't be applied at the same time). Patch will not be loaded.", LogLevel.Error);
                     return false;
                 }
-                
+
                 //if array time is greater than 0 and location is any, return false
-                if (time <= 0 && array.Location == "any")
+                if (time <= 0 && data.Location == "any")
                 {
-                    ModEntry.Mon.Log($"You must either set an hour or a location. (Addition number {arrayPos})");
+                    ModEntry.Mon.Log($"You must either set an hour or a location.");
                     return false;
                 }
-                
+
                 //if time is greater than 0 but not allowed value, return false
                 else if (time > 0 && (time <= 600 || time >= 2600))
                 {
-                    ModEntry.Mon.Log($"Addition number {arrayPos} has a faulty hour!", LogLevel.Warn);
+                    ModEntry.Mon.Log($"Addition has a faulty hour!", LogLevel.Warn);
                     return false;
                 }
-                
+
                 //if set to change facing, check value. if less than 0 and bigger than 3 return false
-                if(array.ChangeFacing == true)
+                if (!String.IsNullOrWhiteSpace(data.FaceDirection))
                 {
-                    if (array.FaceDirection < 0 || array.FaceDirection > 3)
+                    var dir = Getter.ReturnFacing(data.FaceDirection);
+                    if (dir < 0 || dir > 3)
                     {
-                        ModEntry.Mon.Log($"Addition number {arrayPos} has a faulty facedirection! Value must be between 0 and 3.", LogLevel.Warn);
+                        ModEntry.Mon.Log($"Addition has a faulty facedirection! Value must be between 0 and 3.", LogLevel.Warn);
                         return false;
                     }
                 }
-                timeAndPlace.Add(time, array.Location);
-            }
 
-            var result = timeAndPlace.Count == timeAndPlace.Distinct().Count();
-            if (result == false)
+                if (ModEntry.Dialogues.ContainsKey(who))
+                {
+                    foreach(var addition in ModEntry.Dialogues[who])
+                    {
+                        if(addition.Time == data.Time && addition.Location.ToString() == data.Location)
+                        {
+                            ModEntry.Mon.Log($"An entry with the values Time={data.Time} and Location={data.Location} already exists. Skipping.", LogLevel.Warn);
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
             {
-                ModEntry.Mon.Log($"There are duplicates in this list!", LogLevel.Error);
-                ModEntry.Mon.Log($"timeAndPlace.Count = {timeAndPlace.Count}; timeAndPlace.Distinct().Count() = {timeAndPlace.Distinct().Count()}");
+                ModEntry.Mon.Log($"Error found in contentpack: {ex}", LogLevel.Error);
+                return false;
             }
-
-            return result;
         }
-        
+
         /// <summary>
         /// Check if NPC exists. If null or not in friendship data, returns false.
         /// </summary>
@@ -133,7 +137,7 @@ namespace DynamicDialogues
         internal static bool Exists(string who) //rename to CharacterExists
         {
             var monitor = ModEntry.Mon;
-            var admitted = ModEntry.AdmittedNPCs;
+            var admitted = ModEntry.NPCDispositions;
             var character = Game1.getCharacterFromName(who);
 
             if (character is null)
@@ -155,7 +159,7 @@ namespace DynamicDialogues
         internal static bool Exists(NPC who)
         {
             var monitor = ModEntry.Mon;
-            var admitted = ModEntry.AdmittedNPCs;
+            var admitted = ModEntry.NPCDispositions;
 
             if (who is null)
             {
@@ -195,51 +199,48 @@ namespace DynamicDialogues
 
             return true;
         }
-        
-        /// <summary>
-        /// Converts a raw list to its parsed equivalent.
-        /// </summary>
-        /// <param name="raws">The raw list to convert.</param>
-        /// <returns></returns>
-        internal static List<ParsedDialogues> GetParseds(List<RawDialogues> raws)
-        {
-            List<ParsedDialogues> result = new();
-
-            foreach (var array in raws)
-            {
-                result.Add(new ParsedDialogues(array));
-            }
-
-            return result;
-        }
-        internal static List<ParsedDialogues> GetParseds(RawDialogues[] raws)
-        {
-            List<ParsedDialogues> result = new();
-
-            foreach (var array in raws)
-            {
-                result.Add(new ParsedDialogues(array));
-            }
-
-            return result;
-        }
        
         /// <summary>
-        /// Formats the bubble set by user. "@" is replaced by player name.
+        /// Checks validity of notif patch.
         /// </summary>
-        /// <param name="which">The dialogue to check.</param>
+        /// <param name="notif"> the notification data.</param>
         /// <returns></returns>
-        internal static string FormatBubble(string which)
+        internal static bool IsValidNotif(RawNotifs notif)
         {
-            string result = which;
-
-            var rawspan = which.AsSpan();
-            if (rawspan.Contains<char>('@'))
+            if (String.IsNullOrWhiteSpace(notif.Message))
             {
-                result = which.Replace("@", Game1.player?.Name);
+                ModEntry.Mon.Log("No message found.");
+                return false;
+            }
+            if (notif.Time <= 0 && (String.IsNullOrWhiteSpace(notif.Message) || notif.Message is "any"))
+            {
+                ModEntry.Mon.Log("You must either set time and/or location!");
+                return false;
+            }
+            if(notif.Time > 0 && (notif.Time <= 600 || notif.Time >= 2600))
+            {
+                ModEntry.Mon.Log("Time isn't valid!");
+                return false;
+            }
+            if(!String.IsNullOrWhiteSpace(notif.Sound))
+            {
+                ICue sb;
+                try
+                {
+                    sb = Game1.soundBank.GetCue(notif.Sound);
+                }
+                catch
+                {
+                    sb = null;
+                }
+                if (sb is null)
+                {
+                    ModEntry.Mon.Log("There's no sound with that name!");
+                    return false;
+                }
             }
 
-            return result;
+            return true;
         }
     }
 }
