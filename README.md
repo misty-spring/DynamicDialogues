@@ -39,7 +39,7 @@ Location | (*) Name of the map the NPC has to be in.
 Dialogue | The text to display.
 ClearOnMove | (Optional) If `true` and dialogue isn't read, it'll disappear once the NPC moves. 
 Override | (Optional) Removes any previous dialogue.
-Force | Will show this NPC's dialogue even if you're not in the location.
+Force | (Optional) Will show this NPC's dialogue even if you're not in the location.
 IsBubble | (Optional) `true`/`false`. Makes the dialogue a bubble over their head.
 Jump | (Optional) If `true`, NPC will jump. 
 Shake | (Optional) Shake for the milliseconds stated (e.g Shake 1000 for 1 second).
@@ -48,7 +48,7 @@ FaceDirection | (Optional) Changes NPC's facing direction. allowed values: `0` t
 
 *= You must either set a time or a location (or both) for the dialogue to load.
 
-This is the template:
+Template:
 ```
 "nameForPatch": {
           "Time": ,
@@ -78,12 +78,10 @@ Example:
         }
       },
       "When":{
-        "Weather":"sunny"
+        "Weather":"Sun"
       }
     },
 ```
-
-
 
 ### Adding greetings
 
@@ -133,13 +131,15 @@ Template:
 ```
         "example_asBox": {
           "Time": "",
+          "Location": "",
           "Message": "",
           "IsBox": false,
           "Sound": "",
           }
 
 ```
-
+**Note:** If you don't want the notif to appear every day, use CP's "When" field 
+(e.g only send when it rains, when you've got x hearts with a NPC, etc. All conditions are compatible).
 Example:
 ```
 {
@@ -147,16 +147,17 @@ Example:
       "Target": "mistyspring.dynamicdialogues/Notifs",
       "Entries": {
         "example_asBox": {
-          "Time": "640",
-          "Message": "Notif test as a box.",
+          "Location": "Farm",
+          "Message": "The weather seems gloomy today...",
           "IsBox": true
         }
+      },
+      "When":{
+        "Weather":"Rain, Storm"
       }
     },
-
 ```
-**Note:** If you don't want the notif to appear every day, use CP's "When" field 
-(e.g only send when it rains, when you've got x hearts with a NPC, etc. All conditions are compatible).
+
 
 ## For more information
 You can send me any question via [nexusmods](https://www.nexusmods.com/users/130944333) or in here.
