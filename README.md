@@ -39,6 +39,7 @@ Location | (*) Name of the map the NPC has to be in.
 Dialogue | The text to display.
 ClearOnMove | (Optional) If `true` and dialogue isn't read, it'll disappear once the NPC moves. 
 Override | (Optional) Removes any previous dialogue.
+Force | Will show this NPC's dialogue even if you're not in the location.
 IsBubble | (Optional) `true`/`false`. Makes the dialogue a bubble over their head.
 Jump | (Optional) If `true`, NPC will jump. 
 Shake | (Optional) Shake for the milliseconds stated (e.g Shake 1000 for 1 second).
@@ -53,6 +54,8 @@ This is the template:
           "Time": ,
           "Location": ,
           "Dialogue": ,
+          "Override": ,
+          "Force": ,
           "ClearOnMove": ,
           "IsBubble": ,
           "Emote": ,
@@ -60,21 +63,7 @@ This is the template:
           "Jump": ,
         },
 ```
-Just remove any fields you won't be using. Example:
-```
-{
-      "Action": "EditData",
-      "Target": "mistyspring.dynamicdialogues/Dialogues/Haley",
-      "Entries": {
-        "examplepatch": {
-          "Time": "700",
-          "Dialogue": "Some placeholder text",
-          "IsBubble": "true",
-          "Jump": "true"
-        }
-      }
-    },
-```
+Just remove any fields you won't be using.
 **Note:** If you don't want the dialogue to appear every day, use CP's "When" field.
 Example:
 ```
