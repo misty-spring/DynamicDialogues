@@ -13,6 +13,7 @@ A framework which allows for dynamic dialogues throughout the day.
 ## Features
 - Custom notifications
 - Custom npc dialogues throughout the day
+  - Dialogues have several configuration options. 
   - Both of these are time and/or location dependant.
 - Custom greetings (when npcs say hi to each other)
 
