@@ -149,3 +149,5 @@ Example:
 
 ```
 
+## For more information
+You can send me any question via [nexusmods](https://www.nexusmods.com/users/130944333) or in here.
