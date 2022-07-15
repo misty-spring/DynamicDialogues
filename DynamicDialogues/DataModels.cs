@@ -99,4 +99,30 @@ namespace DynamicDialogues
             IsBox = rn.IsBox;
         }
     }
+
+    internal class RawQuestions
+    {
+        public string Question { get; set; }
+        public string Answer { get; set; }
+        public int MaxTimesAsked { get; set; } = 0; //0 meaning forever avaiable
+        public string Location { get; set; } = "any"; //if avaiable only in a specific location
+        public int From { get; set; } = 610; //from this hour
+        public int To { get; set; } = 2550; //until this hour
+
+        public RawQuestions()
+        {
+        }
+
+        public RawQuestions(RawQuestions q)
+        {
+            Question = q.Question;
+            Answer = q.Answer;
+
+            MaxTimesAsked = q.MaxTimesAsked;
+            Location = q.Location;
+            
+            From = q.From;
+            To = q.To;
+        }
+    }
 }

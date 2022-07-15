@@ -49,10 +49,10 @@ namespace DynamicDialogues
             ClearTemp();
             GetFriendedNPCs();
 
-            //get dialogue via NPCs in "framework" data
+            //get dialogue for NPCs
             foreach (var name in PatchableNPCs)
             {
-                if (!Exists(name)) //!AdmittedNPCs.Contains(name) || 
+                if (!Exists(name)) //if NPC doesnt exist in savedata
                 {
                     this.Monitor.Log($"{name} data won't be added. Check log for more details.", LogLevel.Warn);
                     continue;
@@ -63,53 +63,30 @@ namespace DynamicDialogues
                 }
                 var CompatRaw = Game1.content.Load<Dictionary<string, RawDialogues>>($"mistyspring.dynamicdialogues/Dialogues/{name}");
                 GetNPCDialogues(CompatRaw, name);
+
+                //get questions
+                var QRaw = Game1.content.Load<Dictionary<string, RawQuestions>>($"mistyspring.dynamicdialogues/Questions/{name}");
+                GetQuestions(name);
             }
-            this.Monitor.Log($"Loaded {Dialogues?.Count ?? 0} user patches. (Dialogues)");
+            var dc = Dialogues?.Count ?? 0;
+            this.Monitor.Log($"Loaded {dc} user patches. (Dialogues)");
+
+            var qc = Questions?.Count ?? 0;
+            this.Monitor.Log($"Loaded {qc} user patches. (Questions)");
 
             //get greetings
             var greetRaw = Game1.content.Load<Dictionary<string, Dictionary<string, string>>>("mistyspring.dynamicdialogues/Greetings");
-            foreach (var edit in greetRaw)
-            {
-                NPC mainCh = Game1.getCharacterFromName(edit.Key);
-                if (!Exists(mainCh))
-                {
-                    continue;
-                }
-
-                this.Monitor.Log($"Loading greetings for {edit.Key}...");
-                Dictionary<NPC, string> ValueOf = new();
-
-                foreach (var npcgreet in edit.Value)
-                {
-                    this.Monitor.Log($"Checking greet data for {npcgreet.Key}...");
-                    var chara = Game1.getCharacterFromName(npcgreet.Key);
-
-                    if (IsValidGreeting(chara, npcgreet.Value))
-                    {
-                        Greetings.Add((edit.Key, npcgreet.Key), npcgreet.Value);
-                        this.Monitor.Log("Greeting added.");
-                    }
-                }
-            }
-            this.Monitor.Log($"Loaded {Greetings?.Count ?? 0} user patches. (Greetings)");
+            GetGreetings(greetingRaw);
+            var gc = Greetings?.Count ?? 0;
+            this.Monitor.Log($"Loaded {gc} user patches. (Greetings)");
             
             //get notifs
             var notifRaw = Game1.content.Load<Dictionary<string, RawNotifs>>("mistyspring.dynamicdialogues/Notifs");
-            foreach (var pair in notifRaw)
-            {
-                var notif = pair.Value;
-                if (IsValidNotif(notif))
-                {
-                    ModEntry.Mon.Log($"Notification \"{pair.Key}\" parsed successfully.");
-                    Notifs.Add(notif);
-                }
-                else
-                {
-                    ModEntry.Mon.Log($"Found error in \"{pair.Key}\" while parsing, check Log for details.", LogLevel.Error);
-                }
-            }
-            this.Monitor.Log($"Loaded {Notifs?.Count ?? 0} user patches. (Notifs)");
+            GetNotifs(notifRaw);
+            var nc = Notifs?.Count ?? 0;
+            this.Monitor.Log($"Loaded {nc} user patches. (Notifs)");
 
+            this.Monitor.Log($"{dc + gc + nc + qc} total user patches loaded.");
         }
 
         private void OnTimeChange(object sender, TimeChangedEventArgs e)
@@ -190,6 +167,7 @@ namespace DynamicDialogues
                             {
                                 this.Monitor.Log($"Clearing {patch.Key} dialogue.");
                                 chara.CurrentDialogue.Clear();
+                                chara.EndOfRouteMessage.Clear();
                             }
 
                             //if should be immediate. ie not wait for npc to pass by
@@ -259,6 +237,15 @@ namespace DynamicDialogues
                     AlreadyPatched.Add(conditional);
                 }
             }
+            foreach(var NaQ in Questions)
+            {
+                NPC chara = Game1.getCharacterFromName(NaQ.Key);
+                if(!chara.CurrentDialogue.Any())
+                {
+                    //use a method in "getter" that returns the proper string by giving it NaQ.Value - 
+                    chara.setNewDialogue(QuestionDialogue(NaQ.Value), true, true);
+                }
+            }
         }
 
         private void OnTitleReturn(object sender, ReturnedToTitleEventArgs e)
@@ -287,6 +274,15 @@ namespace DynamicDialogues
                     () => new Dictionary<string, RawDialogues>(),
                     AssetLoadPriority.Medium
                     );
+                }
+
+                //questions
+                if (e.NameWithoutLocale.IsEquivalentTo($"mistyspring.dynamicdialogues/Questions/{name}", true))
+                {
+                    e.LoadFrom(
+                    () => new Dictionary<string, RawQuestions>(),
+                    AssetLoadPriority.Medium
+                );
                 }
             }
 
@@ -343,6 +339,78 @@ namespace DynamicDialogues
                 }
             }
         }
+        private void GetGreetings(Dictionary<string, Dictionary<string, string>> greetRaw)
+        {
+            foreach (var edit in greetRaw)
+            {
+                NPC mainCh = Game1.getCharacterFromName(edit.Key);
+                if (!Exists(mainCh))
+                {
+                    continue;
+                }
+
+                this.Monitor.Log($"Loading greetings for {edit.Key}...");
+                Dictionary<NPC, string> ValueOf = new();
+
+                foreach (var npcgreet in edit.Value)
+                {
+                    this.Monitor.Log($"Checking greet data for {npcgreet.Key}...");
+                    var chara = Game1.getCharacterFromName(npcgreet.Key);
+
+                    if (IsValidGreeting(chara, npcgreet.Value))
+                    {
+                        Greetings.Add((edit.Key, npcgreet.Key), npcgreet.Value);
+                        this.Monitor.Log("Greeting added.");
+                    }
+                }
+            }
+        }
+        private void GetNotifs(Dictionary<string, RawNotifs> notifRaw)
+        {
+            foreach (var pair in notifRaw)
+            {
+                var notif = pair.Value;
+                if (IsValidNotif(notif))
+                {
+                    ModEntry.Mon.Log($"Notification \"{pair.Key}\" parsed successfully.");
+                    Notifs.Add(notif);
+                }
+                else
+                {
+                    ModEntry.Mon.Log($"Found error in \"{pair.Key}\" while parsing, check Log for details.", LogLevel.Error);
+                }
+            }
+        }
+        private void GetQuestions(Dictionary<string,Dictionary<string,string>> QRaw)
+        {
+            foreach (var extra in QRaw)
+            {
+                if (!Exists(extra.Key))
+                {
+                    continue;
+                }
+
+                var QnA = extra.Value;
+                if(!String.IsNullOrWhiteSpace(QnA.Key) && !String.IsNullOrWhiteSpace(QnA.Value))
+                {
+                    if((bool)(Questions?.ContainsKey(nameof)))
+                    {
+                        Questions[extra.Key].Add(QnA.Key, QnA.Value);
+                    }
+                    else
+                    {
+                        var dict = new Dictionary<string,string>();
+                        dict.Add(QnA.Key, QnA.Value);
+                        Questions.Add(extra.Key, dict);
+                    }
+                }
+                else
+                {
+                    var pos = QRaw.IndexOf(extra);
+                    this.Monitor.Log($"Entry {pos} for {extra.Key} is faulty! It won't be added. (Both question and answer must have text)", LogLevel.Warn);
+                }
+            }
+        }
         private void GetFriendedNPCs()
         {
             foreach (var name in NPCDispositions)
@@ -369,10 +437,12 @@ namespace DynamicDialogues
             Dialogues?.Clear();
             Greetings?.Clear();
             Notifs?.Clear();
+            Questions?.Clear();
             PatchableNPCs?.Clear();
         }
 
         /* Required by mod to work */
+        internal static Dictionary<string, List<RawQuestions>> Questions { get; private set; } = new();
         internal static Dictionary<string, List<RawDialogues>> Dialogues { get; private set; } = new();
         internal static Dictionary<(string, string), string> Greetings { get; private set; } = new();
         internal static List<RawNotifs> Notifs { get; private set; } = new();
