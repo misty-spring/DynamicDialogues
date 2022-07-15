@@ -242,5 +242,34 @@ namespace DynamicDialogues
 
             return true;
         }
+
+        internal static bool IsValidQuestion(RawQuestions q)
+        {
+            if(String.IsNullOrWhiteSpace(q.Question))
+            {
+                ModEntry.Mon.Log("Question must have text!",LogLevel.Error);
+                return false;
+            }
+
+            if(String.IsNullOrWhiteSpace(q.Answer))
+            {
+                ModEntry.Mon.Log("Answer must have text!",LogLevel.Error);
+                return false;
+            }
+
+            if(q.MaxTimesAsked < 0)
+            {
+                ModEntry.Mon.Log("Max times asked can't be less than 0!",LogLevel.Error);
+                return false;
+            }
+
+            if(q.From is 600 || q.To is 2600)
+            {
+                ModEntry.Mon.Log("Time can't start at 600 or end at 2600.",LogLevel.Error);
+                return false;
+            }
+
+            return true;
+        }
     }
 }

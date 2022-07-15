@@ -56,5 +56,47 @@ namespace DynamicDialogues
 
             return -1;
         }
+
+        /// <summary>
+        /// Returns a string with all questions/answers a character can give.
+        /// </summary>
+        /// <param name="QAs">Dictionary where key=question, value=answer.</param>
+        /// <returns></returns>
+        internal static string QuestionDialogue(List<RawQuestions> QAs, NPC who)
+        {
+            //$y seems to be infinite version of question. so it's used for this
+            string result = "$y '"
+            foreach(var extra in QAs)
+            {
+                if(extra.From > Game1.time || extra.To < Game1.time)
+                {
+                    continue;
+                }
+                if(who.currentLocation.Name is not extra.Location)
+                {
+                    continue;
+                }
+
+
+                int count;
+
+                if(ModEntry.QuestionCounter.ContainsKey(extra.Question))
+                {
+                    count = ModEntry.QuestionCounter[extra.Question];
+                }
+                else
+                {
+                    ModEntry.QuestionCounter.Add(extra.Question, 0);
+                }
+
+                if(count >= extra.MaxTimesAsked)
+                {
+                    result += $"_{extra.Question}_{extra.Answer}"
+                    ModEntry.QuestionCounter[extra.Question]++;
+                }
+            }
+            result += "'"
+            return result;
+        }
     }
 }

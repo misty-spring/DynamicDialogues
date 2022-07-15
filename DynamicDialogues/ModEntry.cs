@@ -66,7 +66,7 @@ namespace DynamicDialogues
 
                 //get questions
                 var QRaw = Game1.content.Load<Dictionary<string, RawQuestions>>($"mistyspring.dynamicdialogues/Questions/{name}");
-                GetQuestions(name);
+                GetQuestions(QRaw, name);
             }
             var dc = Dialogues?.Count ?? 0;
             this.Monitor.Log($"Loaded {dc} user patches. (Dialogues)");
@@ -242,8 +242,14 @@ namespace DynamicDialogues
                 NPC chara = Game1.getCharacterFromName(NaQ.Key);
                 if(!chara.CurrentDialogue.Any())
                 {
+                    var qna = QuestionDialogue(NaQ.Value);
+                    if(qna is "$y ''")
+                    {
+                        continue;
+                    }
+
                     //use a method in "getter" that returns the proper string by giving it NaQ.Value - 
-                    chara.setNewDialogue(QuestionDialogue(NaQ.Value), true, true);
+                    chara.setNewDialogue(qna, true, true);
                 }
             }
         }
@@ -381,33 +387,29 @@ namespace DynamicDialogues
                 }
             }
         }
-        private void GetQuestions(Dictionary<string,Dictionary<string,string>> QRaw)
+        private void GetQuestions(Dictionary<string, RawQuestions> QRaw, string nameof)
         {
             foreach (var extra in QRaw)
             {
-                if (!Exists(extra.Key))
-                {
-                    continue;
-                }
-
+                var title = extra.Key;
                 var QnA = extra.Value;
-                if(!String.IsNullOrWhiteSpace(QnA.Key) && !String.IsNullOrWhiteSpace(QnA.Value))
+                if(CanAddQuestion(QnA) && !String.IsNullOrWhiteSpace(title))
                 {
                     if((bool)(Questions?.ContainsKey(nameof)))
                     {
-                        Questions[extra.Key].Add(QnA.Key, QnA.Value);
+                        Questions[nameof].Add(QnA);
                     }
                     else
                     {
-                        var dict = new Dictionary<string,string>();
-                        dict.Add(QnA.Key, QnA.Value);
-                        Questions.Add(extra.Key, dict);
+                        var dict = new List<RawDialogues>();
+                        dict.Add(QnA);
+                        Questions.Add(nameof, dict);
                     }
                 }
                 else
                 {
                     var pos = QRaw.IndexOf(extra);
-                    this.Monitor.Log($"Entry {pos} for {extra.Key} is faulty! It won't be added. (Both question and answer must have text)", LogLevel.Warn);
+                    this.Monitor.Log($"Entry {pos} for {extra.Key} is faulty! It won't be added.", LogLevel.Warn);
                 }
             }
         }
@@ -446,6 +448,8 @@ namespace DynamicDialogues
         internal static Dictionary<string, List<RawDialogues>> Dialogues { get; private set; } = new();
         internal static Dictionary<(string, string), string> Greetings { get; private set; } = new();
         internal static List<RawNotifs> Notifs { get; private set; } = new();
+
+        internal static Dictionary<string, int> QuestionCounter { get; set; } = new();
 
         internal static List<string> PatchableNPCs { get; private set; } = new();
         internal static List<string> NPCDispositions { get; private set; } = new();
