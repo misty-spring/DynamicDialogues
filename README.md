@@ -155,12 +155,6 @@ Example:
           "Answer": "My, they're quite gloomy....$2",
           "Location": "ElliottHouse",
           "MaxTimesAsked": 2
-        },
-        "rainyday_farmhouse": {
-          "Question": "What do you think of rainy days?",
-          "Answer": "They used to be quite gloomy...$2#$b#But now? they're soothing to the soul.$1",
-          "Location": "FarmHouse"
-
         }
       },
       "When":{
