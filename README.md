@@ -7,6 +7,7 @@ A framework which allows for dynamic dialogues throughout the day.
 * [How to use](#how-to-use)
   * [Adding dialogues](#adding-dialogues)
   * [Adding greetings](#adding-greetings)
+  * [Adding questions](#adding-questions)
   * [Adding notifications](#adding-notifications)
 * [Known issues](#known-issues)
 
@@ -112,6 +113,52 @@ Example:
     }
 ```
 
+### Adding questions
+
+Questions are loaded from `mistyspring.dynamicdialogues/Questions/<NPC name>`. Once a NPC has nothing else to talk about, you can ask them questions (if any are added to their respective file).
+Like with dialogues, these need a key (it's only used in the case errors are found, so the name doesn't matter).
+
+name | description
+-----|------------ 
+Question | Text the question will have.
+Answer | NPC's answer.
+MaxTimesAsked | Max times you can ask this question. If 0, it'll count as infinite (Optional)
+Location | The question will only appear when in this location. (Optional)
+From | The hour the question *can* begin being added at. (Optional)
+To | Limit time for adding the question. (Optional)
+
+Template:
+```
+"nameForPatch": {
+          "Question": ,
+          "Answer": ,
+          "MaxTimesAsked": ,
+          "Location": ,
+          "From": ,
+          "To": 
+        },
+```
+
+Just remove any fields you won't be using.
+**Note:** If you don't want the question to appear every day, use CP's "When" field.
+Example:
+```
+{
+      "Action": "EditData",
+      "Target": "mistyspring.dynamicdialogues/Questions/Elliott",
+      "Entries": {
+        "rainyday": {
+          "Question": "What do you think of rainy days?",
+          "Answer": "My, they're quite gloomy....$2",
+          "Location": "ElliottHouse",
+          "MaxTimesAsked": 2
+        }
+      },
+      "When":{
+        "Weather":"Rain"
+      }
+    },
+```
 
 ### Adding notifications
 Notifications are loaded from `mistyspring.dynamicdialogues/Notifs`.
@@ -157,7 +204,6 @@ Example:
       }
     },
 ```
-
 
 ## For more information
 You can send me any question via [nexusmods](https://www.nexusmods.com/users/130944333) or in here.
