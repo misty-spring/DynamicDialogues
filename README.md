@@ -115,7 +115,7 @@ Example:
 
 ### Adding questions
 
-Questions are loaded from `mistyspring.dynamicdialogues/Questions/<NPC name>`. Once a NPC has nothing else to talk about, you can ask them questions (if any are added to their respective file).
+Questions are loaded from `mistyspring.dynamicdialogues/Questions/<NPC name>`. Once a NPC has nothing else to talk about, you can ask them questions (if any exist).
 Like with dialogues, these need a key (it's only used in the case errors are found, so the name doesn't matter).
 
 name | description
