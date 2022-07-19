@@ -118,6 +118,7 @@ Example:
 Questions are loaded from `mistyspring.dynamicdialogues/Questions/<NPC name>`. Once a NPC has nothing else to talk about, you can ask them questions (if any exist).
 
 Like with dialogues, these need a key (it's only used in the case errors are found, so the name doesn't matter).
+
 You can add multiple questions.
 
 name | description
@@ -158,8 +159,7 @@ Example:
         "rainyday_farmhouse": {
           "Question": "What do you think of rainy days?",
           "Answer": "They used to be quite gloomy...$2#$b#But now? they're soothing to the soul.$1",
-          "Location": "FarmHouse",
-          "From": 2200
+          "Location": "FarmHouse"
 
         }
       },
