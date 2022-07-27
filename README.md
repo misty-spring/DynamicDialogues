@@ -36,6 +36,8 @@ Each dialogue has a unique key to ensure multiple patches can exist.
 name | description
 -----|------------
 Time | (*) Time to set dialogue at. 
+From | (\*\*) Min. time to apply dialogue at.
+To | (\*\*) Max time to apply dialogue at
 Location | (*) Name of the map the NPC has to be in. 
 Dialogue | The text to display.
 ClearOnMove | (Optional) If `true` and dialogue isn't read, it'll disappear once the NPC moves. 
@@ -46,13 +48,17 @@ Jump | (Optional) If `true`, NPC will jump.
 Shake | (Optional) Shake for the milliseconds stated (e.g Shake 1000 for 1 second).
 Emote | (Optional) Will display the emote at that index ([see list of emotes](https://docs.google.com/spreadsheets/d/18AtLClQPuC96rJOC-A4Kb1ZkuqtTmCRFAKn9JJiFiYE/edit#gid=693962458))
 FaceDirection | (Optional) Changes NPC's facing direction. allowed values: `0` to `3` or `up`,`down`,`left`,`right`.
+Animation | (Optional) Animates the character briefly.
 
-*= You must either set a time or a location (or both) for the dialogue to load.
+*= You need either a time or location (or both) for the dialogue to load.
+** = Mutually exclusive with "Time" field. Use this if you need a dialogue to show up *only* when the player is present.
 
 Template:
 ```
 "nameForPatch": {
           "Time": ,
+          "From": ,
+          "To": ,
           "Location": ,
           "Dialogue": ,
           "Override": ,
@@ -66,23 +72,8 @@ Template:
 ```
 Just remove any fields you won't be using.
 **Note:** If you don't want the dialogue to appear every day, use CP's "When" field.
-Example:
-```
-{
-      "Action": "EditData",
-      "Target": "mistyspring.dynamicdialogues/Dialogues/Haley",
-      "Entries": {
-        "sunnyday": {
-          "Time": "1000",
-          "Dialogue": "It's so sunny today!",
-          "IsBubble": true
-        }
-      },
-      "When":{
-        "Weather":"Sun"
-      }
-    },
-```
+
+For specific examples, see [here](https://github.com/misty-spring/DynamicDialogues/blob/main/example-dialogues.md).
 
 ### Adding greetings
 
@@ -208,6 +199,14 @@ Example:
       }
     },
 ```
+
+
+## Known issues
+None, as of now.
+
+(Keep in mind, this framework updates its information once per game day. So, edits added OnLocationChange/OnTimeChange won't be applied.
+The framework contains a time and location condition (for the dynamic content), so this is not a problem).
+
 
 ## For more information
 You can send me any question via [nexusmods](https://www.nexusmods.com/users/130944333) or in here.
