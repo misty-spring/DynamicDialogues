@@ -4,7 +4,6 @@
   * [Overriding dialogue](#using-override)
   * [Adding an animation](#using-animation)
 
-------------
 
 ## Dialogue examples
 
@@ -58,6 +57,7 @@ Let's say you want Willy to jump and say something- *only* between 610 - 8am and
 
 So, if the player enters the beach (between the specified time), willy will do this. 
 
+------------
 
 ### Using ClearOnMove
 This option is specific to "box" dialogues (ones you have to click to see). If used with `"IsBubble": true`, it won't do anything.
