@@ -1,6 +1,7 @@
 ## Contents
 * [Dialogue examples](#dialogue-examples)
   * [From-To (time condition)](#using-from-to)
+  * [Remove dialogue if NPC leaves](#using-clearonmove)
   * [Overriding dialogue](#using-override)
   * [Adding an animation](#using-animation)
 
