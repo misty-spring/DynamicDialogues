@@ -1,3 +1,11 @@
+## Contents
+* [Dialogue examples](#dialogue-examples)
+  * [From-To (time condition)](#using-from-to)
+  * [Overriding dialogue](#using-override)
+  * [Adding an animation](#using-animation)
+
+
+
 ## Dialogue examples
 
 As mentioned before, these are the options you can use for dialogues:
@@ -81,7 +89,7 @@ If you want Emily to say something when she's working at Gus', you'll need to us
           "Override": true,
         },
 ```
-
+------------
 
 ### Using Animation
 "Animation" will animate the character once.
