@@ -11,7 +11,6 @@ A framework which allows for dynamic dialogues throughout the day.
   * [Adding notifications](#adding-notifications)
 * [Known issues](#known-issues)
 
-------------
 
 ## Features
 - Custom notifications
