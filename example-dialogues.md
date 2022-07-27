@@ -4,7 +4,7 @@
   * [Overriding dialogue](#using-override)
   * [Adding an animation](#using-animation)
 
-
+------------
 
 ## Dialogue examples
 
@@ -32,6 +32,7 @@ Animation | (Optional) Adds momentary animation.
 
 \*\* = Mutually exclusive with "Time". Useful if you want a dialogue to show up *only* when the player is present.
 
+------------
 
 ### Using From-To
 From-To will only apply the changes when the player is present, and when the time fits the given range.
@@ -72,7 +73,7 @@ This makes Leah say something at Pierre's. If she starts walking (e.g to exit), 
           "ClearOnMove": true,
         },
 ```
-
+------------
 
 ### Using Override
 This option is for "box" dialogues (ones you have to click to see). If used with `"IsBubble": true`, it won't do anything.
