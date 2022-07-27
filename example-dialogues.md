@@ -17,6 +17,7 @@ Jump | (Optional) If `true`, NPC will jump.
 Shake | (Optional) Shake for the milliseconds stated (e.g Shake 1000 for 1 second).
 Emote | (Optional) Will display the emote at that index ([see list of emotes](https://docs.google.com/spreadsheets/d/18AtLClQPuC96rJOC-A4Kb1ZkuqtTmCRFAKn9JJiFiYE/edit#gid=693962458))
 FaceDirection | (Optional) Changes NPC's facing direction. allowed values: `0` to `3` or `up`,`down`,`left`,`right`.
+Animation | (Optional) Adds momentary animation.
 
 
 \* = You need either a time or location (or both) for the dialogue to load.
@@ -77,4 +78,43 @@ If you want Emily to say something when she's working at Gus', you'll need to us
           "Dialogue": "Did you come buy something?",
           "Override": true,
         },
+```
+
+### Using Animation
+"Animation" will animate the character once.
+This will work as long as the character isn't moving already. 
+(e.g: if you try to make Harvey animate during aerobics, it won't work- because he's already "moving". Similarly, if a character is walking somewhere the animation won't be applied (since this would mess up the entire sprite).
+
+When time changes again, the animation is removed.
+
+\* You must set "Enabled" to `true` inside animations. This can have any animation, even vanilla ones.
+\** You must use a valid frame- if you choose a frame that doesn't exist, it will cause errors (this is part of in-game errors / something i can't do anything about.) 
+- Explanation: Since some mods add *extra* animations to sprites, the framework has no way of knowing what the max frame is.
+
+name | description
+-----|------------
+Enabled | Whether to enable animations.
+StartingFrame | The frame to start the animation from.
+AmountOfFrames | The frames (counting the starting one) to include.
+Interval | Milliseconds to show every frame for.
+
+Frames start at 0, from the top left (and continue to the right, then the next row. Located in the game's `Content/Characters` folder).
+If you need help, see [here](https://stardewvalleywiki.com/Modding:NPC_data#Overworld_sprites).
+
+**Example:** 
+When at the beach, Alex will momentarily play with the gridball.
+```
+"gridBall": {
+
+          "Location": "Beach",
+          "Dialogue": "This is fun.",
+          "IsBubble": true,
+          "Animation": 
+          {
+            "Enabled": true,
+            "StartingFrame": 16,
+            "AmountOfFrames": 7,
+            "Interval": 150,
+          }
+}
 ```
