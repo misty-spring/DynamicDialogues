@@ -11,6 +11,8 @@ A framework which allows for dynamic dialogues throughout the day.
   * [Adding notifications](#adding-notifications)
 * [Known issues](#known-issues)
 
+------------
+
 ## Features
 - Custom notifications
 - Custom npc dialogues throughout the day
@@ -20,6 +22,8 @@ A framework which allows for dynamic dialogues throughout the day.
 
 This mod makes use of ContentPatcher to be edited.
 
+------------
+
 ## How to use
 Every NPC has its own dialogue file- this is made by checking NPCDispositions when the save is loaded.
 So it's compatible with custom NPCs of any type.
@@ -28,6 +32,8 @@ Notifs are all in a single file, and so are Greetings (see adding [notifs](#addi
 
 If the NPC hasn't been unlocked yet (e.g kent or leo), their entries will be skipped until the player meets them.
 **Note:** ALL files are reloaded when the day starts.
+
+------------
 
 ### Adding dialogues
 To add dialogues, edit `mistyspring.dynamicdialogues/Dialogues/<namehere>`. 
@@ -75,6 +81,8 @@ Just remove any fields you won't be using.
 
 For specific examples, see [here](https://github.com/misty-spring/DynamicDialogues/blob/main/example-dialogues.md).
 
+------------
+
 ### Adding greetings
 
 Greetings use a file called `mistyspring.dynamicdialogues/Greetings`.
@@ -103,6 +111,8 @@ Example:
       }
     }
 ```
+
+------------
 
 ### Adding questions
 
@@ -155,6 +165,8 @@ Example:
     },
 ```
 
+------------
+
 ### Adding notifications
 Notifications are loaded from `mistyspring.dynamicdialogues/Notifs`.
 
@@ -200,6 +212,7 @@ Example:
     },
 ```
 
+------------
 
 ## Known issues
 None, as of now.
@@ -207,6 +220,7 @@ None, as of now.
 (Keep in mind, this framework updates its information once per game day. So, edits added OnLocationChange/OnTimeChange won't be applied.
 The framework contains a time and location condition (for the dynamic content), so this is not a problem).
 
+------------
 
 ## For more information
 You can send me any question via [nexusmods](https://www.nexusmods.com/users/130944333) or in here.
