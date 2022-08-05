@@ -1,5 +1,6 @@
 using StardewValley;
 using System;
+using System.Collections.Generic;
 
 namespace DynamicDialogues
 {
@@ -60,43 +61,78 @@ namespace DynamicDialogues
         /// <summary>
         /// Returns a string with all questions/answers a character can give.
         /// </summary>
-        /// <param name="QAs">Dictionary where key=question, value=answer.</param>
+        /// <param name="QAs">List of q data.</param>
         /// <returns></returns>
         internal static string QuestionDialogue(List<RawQuestions> QAs, NPC who)
         {
             //$y seems to be infinite version of question. so it's used for this
-            string result = "$y '"
+            string result = "$y '";
             foreach(var extra in QAs)
             {
-                if(extra.From > Game1.time || extra.To < Game1.time)
+                if(extra.From > Game1.timeOfDay || extra.To < Game1.timeOfDay)
                 {
                     continue;
                 }
-                if(who.currentLocation.Name is not extra.Location)
+                if(extra.Location is not "any" && extra.Location.Equals(who.currentLocation.Name) == false)
                 {
                     continue;
                 }
 
-
-                int count;
-
-                if(ModEntry.QuestionCounter.ContainsKey(extra.Question))
+                if(extra.MaxTimesAsked > 0)
                 {
-                    count = ModEntry.QuestionCounter[extra.Question];
+                    int count = 0;
+                    if (ModEntry.QuestionCounter.ContainsKey(extra.Question))
+                    {
+                        count = ModEntry.QuestionCounter[extra.Question];
+                    }
+                    else
+                    {
+                        ModEntry.QuestionCounter.Add(extra.Question, 0);
+                    }
+
+                    if (count < extra.MaxTimesAsked)
+                    {
+                        result += $"_{extra.Question}_{extra.Answer}";
+                        ModEntry.QuestionCounter[extra.Question]++;
+                    }
                 }
                 else
                 {
-                    ModEntry.QuestionCounter.Add(extra.Question, 0);
-                }
-
-                if(count >= extra.MaxTimesAsked)
-                {
-                    result += $"_{extra.Question}_{extra.Answer}"
-                    ModEntry.QuestionCounter[extra.Question]++;
+                    result += $"_{extra.Question}_{extra.Answer}";
                 }
             }
-            result += "'"
+            result += "'";
             return result;
+        }
+
+        internal static int GetIndex(Dictionary<string, RawQuestions> dict, string name)
+        {
+            int position = 0;
+            foreach(string key in dict.Keys)
+            {
+                if(key.Equals(name))
+                {
+                    return position;
+                }
+
+                position++;
+            }
+
+            throw new ArgumentOutOfRangeException(); //not in dict
+        }
+
+        internal static int[] FramesForAnimation(string data)
+        {
+            var AsList = data.Split(' ');
+            var result = new List<int>();
+
+            foreach(var item in AsList)
+            {
+                var parsedItem = int.Parse(item);
+                result.Add(parsedItem);
+            }
+
+            return result.ToArray();
         }
     }
 }

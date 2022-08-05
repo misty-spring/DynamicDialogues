@@ -23,6 +23,7 @@ namespace DynamicDialogues
 
             this.Config = this.Helper.ReadConfig<ModConfig>();
             Mon = this.Monitor;
+            Debug = this.Config.Debug;
 
             this.Monitor.Log($"Applying Harmony patch \"{nameof(Patches)}\": prefixing SDV method \"NPC.sayHiTo(Character)\".");
             var harmony = new Harmony(this.ModManifest.UniqueID);
@@ -76,7 +77,7 @@ namespace DynamicDialogues
 
             //get greetings
             var greetRaw = Game1.content.Load<Dictionary<string, Dictionary<string, string>>>("mistyspring.dynamicdialogues/Greetings");
-            GetGreetings(greetingRaw);
+            GetGreetings(greetRaw);
             var gc = Greetings?.Count ?? 0;
             this.Monitor.Log($"Loaded {gc} user patches. (Greetings)");
             
@@ -96,7 +97,8 @@ namespace DynamicDialogues
                 foreach (var d in patch.Value)
                 {
                     //"conditional" variable checks if patch has already been added. if so, returns. if not (and conditions apply), adds it to patch so it won't be re-checked.
-                    var conditional = (patch.Key, d.Time, d.Location);
+                    string timesum = $"At{d.Time}From{d.From}To{d.To}"; 
+                    var conditional = (patch.Key, timesum, d.Location);
                     if ((bool)(AlreadyPatched?.Contains(conditional)))
                     {
                         this.Monitor.LogOnce($"Dialogue {conditional} has already been used today. Skipping...");
@@ -109,15 +111,27 @@ namespace DynamicDialogues
                     }
 
                     var chara = Game1.getCharacterFromName(patch.Key);
+
+                    /*if patch must only be added when npc *isnt* moving
+                     * taken out because it could just confuse more
+                    if (d.ApplyWhenMoving == false)
+                    {
+                        if (chara.isMovingOnPathFindPath.Value)
+                        {
+                            this.Monitor.Log($"NPC {chara.Name} is moving on pathfind path. Patch won't be applied yet.");
+                            continue;
+                        }
+                    }*/
+
                     var inLocation = InRequiredLocation(chara, d.Location);
-                    var timeMatch = d.Time.Equals(e.NewTime);
+                    var timeMatch = InTimeRange(e.NewTime, d.Time, d.From, d.To, chara);
 
                     if(Config.Debug)
                     {
                         this.Monitor.Log($" inLocation = {inLocation}; timeMatch = {timeMatch}");
                     }
 
-                    if ((timeMatch && inLocation) || (d.Time == -1 && inLocation) || (timeMatch && d.Location is "any"))
+                    if (timeMatch && inLocation)
                     {
                         if(Config.Verbose)
                         {
@@ -153,6 +167,29 @@ namespace DynamicDialogues
                             this.Monitor.Log($"Changing {patch.Key} facing direction to {d.FaceDirection}.");
                             chara.faceDirection(facing);
                         }
+                        //if set to animate AND the npc isnt moving (to avoid bugs with walking sprite). if animation is null / doesnt exist, it will consider the bool as false
+                        // NPC.isMovingOnPathFindPath.Value gets only if on path. NPC.isMoving() also considers animations, apparently.
+                        if ((bool)(d.Animation?.Enabled) && chara.isMoving() == false)
+                        {
+                            /* Sprite.Animate 
+                             * Values:
+                             *  GameTime to do it at
+                             *  From this frame
+                             *  Up to (int) more frames
+                             *  Each for (float) milliseconds
+                             */
+                            //chara.Sprite.Animate(Game1.currentGameTime, d.Animation.StartingFrame, d.Animation.AmountOfFrames, d.Animation.Interval);
+
+                            //
+                            List<FarmerSprite.AnimationFrame> list = new();
+                            int[] listOfFrames = FramesForAnimation(d.Animation.Frames);
+
+                            foreach(var frame in listOfFrames)
+                            {
+                                list.Add(new FarmerSprite.AnimationFrame(frame, d.Animation.Interval));
+                            }
+                            chara.Sprite.setCurrentAnimation(list);
+                        }
 
                         /* If its supposed to be a bubble, put the dialogue there. If not, proceed as usual. */
                         if (d.IsBubble)
@@ -167,7 +204,7 @@ namespace DynamicDialogues
                             {
                                 this.Monitor.Log($"Clearing {patch.Key} dialogue.");
                                 chara.CurrentDialogue.Clear();
-                                chara.EndOfRouteMessage.Clear();
+                                chara.endOfRouteMessage.Value = null;
                             }
 
                             //if should be immediate. ie not wait for npc to pass by
@@ -185,7 +222,7 @@ namespace DynamicDialogues
                                 chara.setNewDialogue(d.Dialogue, true, d.ClearOnMove);
                             }
                         }
-                        this.Monitor.Log($"Adding dialogue for {patch.Key} at {e.NewTime}, in {chara.currentLocation}");
+                        this.Monitor.Log($"Adding dialogue for {patch.Key} at {e.NewTime}, in {chara.currentLocation.Name}");
 
                         /* List is checked daily, but removing causes errors in the foreach loop.
                          * So, there'll be a list with today's already added values (tuple of NPC name, time, location)
@@ -197,8 +234,9 @@ namespace DynamicDialogues
             foreach (var notif in Notifs)
             {
                 int pos = Notifs.IndexOf(notif);
-                //we use notif+index since those aren't tied to a npc.
-                var conditional = ($"notification-{pos}", notif.Time, notif.Location);
+                // we use notif+index since those aren't tied to a npc. 
+                // time turned to string due to change in how conditionals are saved
+                var conditional = ($"notification-{pos}", notif.Time.ToString(), notif.Location);
 
                 if ((bool)(AlreadyPatched?.Contains(conditional)))
                 {
@@ -237,12 +275,12 @@ namespace DynamicDialogues
                     AlreadyPatched.Add(conditional);
                 }
             }
-            foreach(var NaQ in Questions)
+            foreach (var NaQ in Questions)
             {
                 NPC chara = Game1.getCharacterFromName(NaQ.Key);
                 if(!chara.CurrentDialogue.Any())
                 {
-                    var qna = QuestionDialogue(NaQ.Value);
+                    var qna = QuestionDialogue(NaQ.Value, chara);
                     if(qna is "$y ''")
                     {
                         continue;
@@ -393,7 +431,7 @@ namespace DynamicDialogues
             {
                 var title = extra.Key;
                 var QnA = extra.Value;
-                if(CanAddQuestion(QnA) && !String.IsNullOrWhiteSpace(title))
+                if(IsValidQuestion(QnA) && !String.IsNullOrWhiteSpace(title))
                 {
                     if((bool)(Questions?.ContainsKey(nameof)))
                     {
@@ -401,18 +439,19 @@ namespace DynamicDialogues
                     }
                     else
                     {
-                        var dict = new List<RawDialogues>();
+                        var dict = new List<RawQuestions>();
                         dict.Add(QnA);
                         Questions.Add(nameof, dict);
                     }
                 }
                 else
                 {
-                    var pos = QRaw.IndexOf(extra);
+                    var pos = GetIndex(QRaw, extra.Key);
                     this.Monitor.Log($"Entry {pos} for {extra.Key} is faulty! It won't be added.", LogLevel.Warn);
                 }
             }
         }
+
         private void GetFriendedNPCs()
         {
             foreach (var name in NPCDispositions)
@@ -441,6 +480,7 @@ namespace DynamicDialogues
             Notifs?.Clear();
             Questions?.Clear();
             PatchableNPCs?.Clear();
+            QuestionCounter?.Clear();
         }
 
         /* Required by mod to work */
@@ -450,12 +490,15 @@ namespace DynamicDialogues
         internal static List<RawNotifs> Notifs { get; private set; } = new();
 
         internal static Dictionary<string, int> QuestionCounter { get; set; } = new();
+        //internal static List<string> ChangedAnimations { get; set; } = new();
 
         internal static List<string> PatchableNPCs { get; private set; } = new();
         internal static List<string> NPCDispositions { get; private set; } = new();
 
-        internal static List<(string, int, string)> AlreadyPatched = new();
+        //changes int to string (due to adding dialogues' from-to)
+        internal static List<(string, string, string)> AlreadyPatched = new();
         internal static IMonitor Mon { get; private set; }
+        internal static bool Debug { get; private set; }
         private ModConfig Config;
     }
 }
