@@ -124,4 +124,34 @@ namespace DynamicDialogues
             Interval = a.Interval;
         }
     }
+    internal class RawMission
+    {
+        public int From { get; set; } = 600; //from this hour
+        public int To { get; set; } = 2600; //until this hour
+        public string Location { get; set; } = "any";  //location npc has to be in
+
+        public string Dialogue { get; set; } = null;  //the dialogue
+        public string AcceptQuest { get; set; } = "Yes";
+        public string RejectQuest { get; set; } = "No";
+
+        public int ID { get; set; } = 0;
+        
+        public RawMission()
+        {
+
+        }
+
+        public RawMission(RawMission rm)
+        {
+            From = rm.From;
+            To = rm.To;
+            Location = rm.Location;
+
+            Dialogue = rm.Dialogue;
+            AcceptQuest = rm.AcceptQuest;
+            RejectQuest = rm.RejectQuest;
+
+            ID = rm.ID;
+        }
+    }
 }

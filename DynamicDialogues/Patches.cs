@@ -39,5 +39,6 @@ namespace DynamicDialogues
 
             return true;
         }
+
     }
 }

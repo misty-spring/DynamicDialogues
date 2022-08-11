@@ -30,7 +30,11 @@ namespace DynamicDialogues
             harmony.Patch(
                 original: AccessTools.Method(typeof(StardewValley.NPC), nameof(StardewValley.NPC.sayHiTo)),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.SayHiTo_Prefix))
-                );
+                );/*
+            harmony.Patch(
+                original: AccessTools.Method(typeof(StardewValley.GameLocation), nameof(StardewValley.GameLocation.afterQuestionBehavior)),
+                postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.afterQuestionBehavior_postfix))
+                );*/
         }
 
         private void SaveLoaded(object sender, SaveLoadedEventArgs e)
@@ -68,6 +72,11 @@ namespace DynamicDialogues
                 //get questions
                 var QRaw = Game1.content.Load<Dictionary<string, RawQuestions>>($"mistyspring.dynamicdialogues/Questions/{name}");
                 GetQuestions(QRaw, name);
+
+
+                //get missions
+                var missionRaw = Game1.content.Load<Dictionary<string, RawMission>>($"mistyspring.dynamicdialogues/Quests/{name}");
+                GetMissions(missionRaw, name);
             }
             var dc = Dialogues?.Count ?? 0;
             this.Monitor.Log($"Loaded {dc} user patches. (Dialogues)");
@@ -87,16 +96,58 @@ namespace DynamicDialogues
             var nc = Notifs?.Count ?? 0;
             this.Monitor.Log($"Loaded {nc} user patches. (Notifs)");
 
-            this.Monitor.Log($"{dc + gc + nc + qc} total user patches loaded.");
+            //get random dialogue
+            var randomRaw = Game1.content.Load<Dictionary<string, List<string>>>("mistyspring.dynamicdialogues/RandomPool");
+            GetDialoguePool(randomRaw);
+            var rr = RandomPool?.Count ?? 0;
+            this.Monitor.Log($"Loaded {rr} user patches. (Dialogue pool)");
+
+            //missions
+            var m = MissionData?.Count ?? 0;
+            this.Monitor.Log($"Loaded {m} user patches. (Mission/Quests)");
+
+            this.Monitor.Log($"{dc + gc + nc + qc + rr + m} total user patches loaded.");
         }
 
         private void OnTimeChange(object sender, TimeChangedEventArgs e)
         {
+            if(e.NewTime % 30 == 0)
+            {
+                foreach (var group in MissionData)
+                {
+                    var who = Game1.getCharacterFromName(group.Key);
+                    if(!(who.currentLocation.Name.Equals(Game1.player.currentLocation.Name)))
+                    {
+                        continue;
+                    }
+
+                    if (who.CurrentDialogue.Count == 0 && Game1.random.Next(101) < Config.MissionChance && CurrentQuests.Contains(who.Name) == false)
+                    {
+                        var mission = RandomMission(group.Value);
+
+                        if(mission is null)
+                        {
+                            continue;
+                        }
+
+                        Game1.player.currentLocation.createQuestionDialogue(mission.Dialogue, GetResponses(mission), new GameLocation.afterQuestionBehavior(AddMission), who);
+                    }
+                }
+                foreach (var name in RandomPool.Keys)
+                {
+                    var who = Game1.getCharacterFromName(name);
+                    if(who.CurrentDialogue.Count == 0)
+                    {
+                        who.setNewDialogue(RandomDialogue(RandomPool[name]), true, true);
+                    }
+                }
+            }
             foreach (var patch in Dialogues)
             {
                 foreach (var d in patch.Value)
                 {
-                    //"conditional" variable checks if patch has already been added. if so, returns. if not (and conditions apply), adds it to patch so it won't be re-checked.
+                    //AlreadyPatched contains already added patched. if current patch is not there (and conditions apply), it's used -then- added to the list.
+
                     string timesum = $"At{d.Time}From{d.From}To{d.To}"; 
                     var conditional = (patch.Key, timesum, d.Location);
                     if ((bool)(AlreadyPatched?.Contains(conditional)))
@@ -167,20 +218,13 @@ namespace DynamicDialogues
                             this.Monitor.Log($"Changing {patch.Key} facing direction to {d.FaceDirection}.");
                             chara.faceDirection(facing);
                         }
-                        //if set to animate AND the npc isnt moving (to avoid bugs with walking sprite). if animation is null / doesnt exist, it will consider the bool as false
-                        // NPC.isMovingOnPathFindPath.Value gets only if on path. NPC.isMoving() also considers animations, apparently.
+                        /*if set to animate AND the npc isnt moving (to avoid bugs with walking sprite). if animation is null / doesnt exist, it will consider the bool as false
+                         * NPC.isMovingOnPathFindPath.Value gets only if on path. NPC.isMoving() also considers animations, apparently.*/
+
                         if ((bool)(d.Animation?.Enabled) && chara.isMoving() == false)
                         {
-                            /* Sprite.Animate 
-                             * Values:
-                             *  GameTime to do it at
-                             *  From this frame
-                             *  Up to (int) more frames
-                             *  Each for (float) milliseconds
-                             */
-                            //chara.Sprite.Animate(Game1.currentGameTime, d.Animation.StartingFrame, d.Animation.AmountOfFrames, d.Animation.Interval);
+                            /* makes new list with anim. frames, gets frames from string, then adds each w/ interval- THEN sets the animation */
 
-                            //
                             List<FarmerSprite.AnimationFrame> list = new();
                             int[] listOfFrames = FramesForAnimation(d.Animation.Frames);
 
@@ -281,7 +325,7 @@ namespace DynamicDialogues
                 if(!chara.CurrentDialogue.Any())
                 {
                     var qna = QuestionDialogue(NaQ.Value, chara);
-                    if(qna is "$y ''")
+                    if(qna is "$y '...'")
                     {
                         continue;
                     }
@@ -312,6 +356,7 @@ namespace DynamicDialogues
             //each NPC file
             foreach (var name in NPCDispositions) //NPCsToPatch
             {
+                //dialogue
                 if (e.NameWithoutLocale.IsEquivalentTo($"mistyspring.dynamicdialogues/Dialogues/{name}", true))
                 {
                     e.LoadFrom(
@@ -328,8 +373,17 @@ namespace DynamicDialogues
                     AssetLoadPriority.Medium
                 );
                 }
-            }
 
+                //mission/quests
+                if (e.NameWithoutLocale.IsEquivalentTo($"mistyspring.dynamicdialogues/Quests/{name}"))
+                {
+                    e.LoadFrom(
+                    () => new Dictionary<string, RawMission>(),
+                    AssetLoadPriority.Medium
+                    );
+                }
+            }
+            
             //greetings
             if (e.NameWithoutLocale.IsEquivalentTo("mistyspring.dynamicdialogues/Greetings", true))
             {
@@ -344,6 +398,15 @@ namespace DynamicDialogues
             {
                 e.LoadFrom(
                 () => new Dictionary<string, RawNotifs>(),
+                AssetLoadPriority.Medium
+                );
+            }
+
+            //random pool of dialogue
+            if (e.NameWithoutLocale.IsEquivalentTo($"mistyspring.dynamicdialogues/RandomPool", true))
+            {
+                e.LoadFrom(
+                () => new Dictionary<string, List<string>>(),
                 AssetLoadPriority.Medium
                 );
             }
@@ -451,6 +514,91 @@ namespace DynamicDialogues
                 }
             }
         }
+        private void GetDialoguePool(Dictionary<string, List<string>> raw)
+        {
+            foreach(var batch in raw)
+            {
+                if(NPCDispositions.Contains(batch.Key))
+                {
+                    if(Config.Verbose)
+                    {
+                        this.Monitor.Log($"Character {batch.Key} found.");
+                    }
+                    RandomPool.Add(batch.Key, batch.Value);
+                }
+                else
+                {
+                    this.Monitor.Log("Character {pair.Key} was not found. Their random dialogue will not be added.", LogLevel.Error);
+                }
+            }
+        }
+        private void GetMissions(Dictionary<string, RawMission> data, string who)
+        {
+            this.Monitor.Log($"Checking {who} quests...");
+            foreach(var group in data)
+            {
+                var mission = group.Value;
+
+                //if any of the values aren't valid, give error and continue
+                if (string.IsNullOrWhiteSpace(mission.Dialogue))
+                {
+                    this.Monitor.Log($"Quest dialogue for {group.Key} is empty! It won't be added.",LogLevel.Error);
+                    continue;
+                }
+                if (mission.From < 600 || mission.To > 2600 || mission.From > mission.To)
+                {
+                    this.Monitor.Log($"Time in quest '{group.Key}' has a faulty hour! Make sure it's between 600 and 2600", LogLevel.Error);
+                    continue;
+                }
+                if (mission.Location is not "any")
+                {
+                    if (Game1.getLocationFromName(mission.Location) == null)
+                    {
+                        this.Monitor.Log($"Location for quest '{group.Key}' could not be found. Mission won't be added.", LogLevel.Error);
+                        continue;
+                    }
+                }
+                if (StardewValley.Quests.Quest.getQuestFromId(mission.ID) == null)
+                {
+                    this.Monitor.Log($"ID for '{group.Key}' doesn't exist!", LogLevel.Error);
+                    continue;
+                }
+
+                var ParsedMission = mission;
+
+                //if using the default answers and not playing in english
+                if(mission.AcceptQuest.Equals("Yes") && mission.RejectQuest.Equals("No") && LocalizedContentManager.CurrentLanguageCode is not LocalizedContentManager.LanguageCode.en)
+                {
+                    try
+                    {
+                        //get the yes/no for native language and use them here
+                        var yes = Game1.content.LoadString("Strings\\Lexicon:QuestionDialogue_Yes");
+                        var no = Game1.content.LoadString("Strings\\Lexicon:QuestionDialogue_No");
+
+                        ParsedMission.AcceptQuest = yes;
+                        ParsedMission.RejectQuest = no;
+
+                    }
+                    catch(Exception ex)
+                    {
+                        this.Monitor.Log($"Error: {ex}",LogLevel.Error);
+                    }
+                }    
+                
+                //if a list for npc already exists, just add value
+                if(MissionData.ContainsKey(who))
+                {
+                    MissionData[who].Add(ParsedMission);
+                }
+                //else, create it
+                else
+                {
+                    var list = new List<RawMission>();
+                    list.Add(ParsedMission);
+                    MissionData.Add(who, list);
+                }
+            }
+        }
 
         private void GetFriendedNPCs()
         {
@@ -481,6 +629,8 @@ namespace DynamicDialogues
             Questions?.Clear();
             PatchableNPCs?.Clear();
             QuestionCounter?.Clear();
+            RandomPool?.Clear();
+            CurrentQuests?.Clear();
         }
 
         /* Required by mod to work */
@@ -488,9 +638,12 @@ namespace DynamicDialogues
         internal static Dictionary<string, List<RawDialogues>> Dialogues { get; private set; } = new();
         internal static Dictionary<(string, string), string> Greetings { get; private set; } = new();
         internal static List<RawNotifs> Notifs { get; private set; } = new();
+        internal static Dictionary<string, List<string>> RandomPool { get; private set; } = new();
 
         internal static Dictionary<string, int> QuestionCounter { get; set; } = new();
-        //internal static List<string> ChangedAnimations { get; set; } = new();
+        internal static Dictionary<string, List<RawMission>> MissionData { get; set; } = new();
+
+        internal static List<string> CurrentQuests { get; set; } = new();
 
         internal static List<string> PatchableNPCs { get; private set; } = new();
         internal static List<string> NPCDispositions { get; private set; } = new();
