@@ -31,6 +31,8 @@ Template:
 Just remove any fields you won't be using.
 **Note:** If you don't want the question to appear every day, use CP's "When" field.
 
+------------
+
 **Example:**
 This will add a question, which can only be asked twice (per day), and only when in Elliott's cabin.
 ```
@@ -52,6 +54,8 @@ This will add a question, which can only be asked twice (per day), and only when
     },
 
 ```
+
+------------
 
 **Example 2:**
 This will add "template" questions for sandy.
