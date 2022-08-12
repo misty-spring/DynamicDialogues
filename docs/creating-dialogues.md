@@ -56,14 +56,6 @@ Just remove any fields you won't be using.
 
 
 For specific examples, see [here](https://github.com/misty-spring/DynamicDialogues/blob/main/example-dialogues.md).
-
-          "Dialogue": "Did you come buy something?",
-
-          "Override": true,
-
-        },
-
-```
 ------------
 
 ### Using From-To
