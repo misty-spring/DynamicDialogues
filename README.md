@@ -5,7 +5,7 @@ A framework which allows for dynamic dialogues throughout the day.
 ## Contents
 * [Features](#features)
 * [How to use](#how-to-use)
-  * [Adding dialogues](#adding-dialogues)
+  * [Adding dialogues](https://github.com/misty-spring/DynamicDialogues/blob/main/docs/creating-dialogues.md)
   * [Adding greetings](#adding-greetings)
   * [Adding questions](#adding-questions)
   * [Adding notifications](#adding-notifications)
@@ -31,54 +31,6 @@ Notifs are all in a single file, and so are Greetings (see adding [notifs](#addi
 
 If the NPC hasn't been unlocked yet (e.g kent or leo), their entries will be skipped until the player meets them.
 **Note:** ALL files are reloaded when the day starts.
-
-------------
-
-### Adding dialogues
-To add dialogues, edit `mistyspring.dynamicdialogues/Dialogues/<namehere>`. 
-Each dialogue has a unique key to ensure multiple patches can exist.
-
-name | description
------|------------
-Time | (*) Time to set dialogue at. 
-From | (\*\*) Min. time to apply dialogue at.
-To | (\*\*) Max time to apply dialogue at
-Location | (*) Name of the map the NPC has to be in. 
-Dialogue | The text to display.
-ClearOnMove | (Optional) If `true` and dialogue isn't read, it'll disappear once the NPC moves. 
-Override | (Optional) Removes any previous dialogue.
-Force | (Optional) Will show this NPC's dialogue even if you're not in the location.
-IsBubble | (Optional) `true`/`false`. Makes the dialogue a bubble over their head.
-Jump | (Optional) If `true`, NPC will jump. 
-Shake | (Optional) Shake for the milliseconds stated (e.g Shake 1000 for 1 second).
-Emote | (Optional) Will display the emote at that index ([see list of emotes](https://docs.google.com/spreadsheets/d/18AtLClQPuC96rJOC-A4Kb1ZkuqtTmCRFAKn9JJiFiYE/edit#gid=693962458))
-FaceDirection | (Optional) Changes NPC's facing direction. allowed values: `0` to `3` or `up`,`down`,`left`,`right`.
-Animation | (Optional) Animates the character briefly.
-
-*= You need either a time or location (or both) for the dialogue to load.
-** = Mutually exclusive with "Time" field. Use this if you need a dialogue to show up *only* when the player is present.
-
-Template:
-```
-"nameForPatch": {
-          "Time": ,
-          "From": ,
-          "To": ,
-          "Location": ,
-          "Dialogue": ,
-          "Override": ,
-          "Force": ,
-          "ClearOnMove": ,
-          "IsBubble": ,
-          "Emote": ,
-          "Shake": ,
-          "Jump": ,
-        },
-```
-Just remove any fields you won't be using.
-**Note:** If you don't want the dialogue to appear every day, use CP's "When" field.
-
-For specific examples, see [here](https://github.com/misty-spring/DynamicDialogues/blob/main/example-dialogues.md).
 
 ------------
 
