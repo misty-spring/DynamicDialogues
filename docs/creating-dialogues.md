@@ -1,9 +1,9 @@
 ## Contents
 * [Adding dialogues](#adding-dialogues)
-  * [Adding dialogues](#adding-dialogues)
-  * [Adding greetings](#adding-greetings)
-  * [Adding questions](#adding-questions)
-  * [Adding notifications](#adding-notifications)
+  * [From-To (time condition)](#using-from-to)
+  * [Remove dialogue if NPC leaves](#using-clearonmove)
+  * [Overriding dialogue](#using-override)
+  * [Adding an animation](#using-animation)
 
 
 ## Adding dialogues
@@ -54,8 +54,6 @@ Template:
 Just remove any fields you won't be using.
 **Note:** If you don't want the dialogue to appear every day, use CP's "When" field.
 
-
-For specific examples, see [here](https://github.com/misty-spring/DynamicDialogues/blob/main/example-dialogues.md).
 ------------
 
 ### Using From-To
