@@ -36,7 +36,7 @@ Notifications are all in a single file, and so are Greetings (see adding [notifs
 If the NPC hasn't been unlocked yet (e.g kent or leo), their entries will be skipped until the player meets them.
 **Note:** ALL files are reloaded when the day starts.
 
-For tutorials on how to add a specific feature, see Contents.
+### Tutorials are linked [here](#Contents).
 
 ------------
 
