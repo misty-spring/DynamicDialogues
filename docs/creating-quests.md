@@ -1,5 +1,5 @@
 ## Contents
-* [Dialogue examples](#Adding-quests)
+* [Adding quests](#Adding-quests)
 
 ## Adding Quests
 Characters can make requests if they're in the same room as you. This has a 30% chance of happening every 30min.
