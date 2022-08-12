@@ -5,6 +5,8 @@ This can occur, for example, when two NPCs walk by each other on the way to thei
 
 Greetings use a file called `mistyspring.dynamicdialogues/Greetings`.
 
+This doesn't use any specific format- it's just the name of the NPC, and entries with the second NPC + their dialogue.
+
 Template:
 ```
       "nameOfNpc": {
@@ -15,7 +17,8 @@ Template:
         }    
 ```
 
-Example:
+**Example:**
+This will edit Alex's greetings towards Evelyn and George. If he meets them on the way to his schedule, he will say "Hello"(if he meets Evelyn), or "Good morning"(if he encounters George instead).
 
 ```
 {
