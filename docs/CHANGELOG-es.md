@@ -16,7 +16,6 @@
 ## 4.1.0
 - Se agregó compatibilidad con LittleNPCs.
 - Arreglo de errores.
-- Se agreg
 
 ## 4.0.1
 - Se arregló error: Las visitas ya no ocurrirán todos los días.
@@ -24,7 +23,7 @@
 
 ## 4.0.0
 - Cambio completo al código ("Overhaul"). 
-- Se removió la Framework del mod, ahora se puede usar ContentPatcher.
+- Se removió la Framework del mod, ahora se debe usar ContentPatcher para esto.
 
 ## 3.3.0
 - Se arregló el bug relacionado a Willy. 
