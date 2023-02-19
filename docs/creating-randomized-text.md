@@ -2,7 +2,7 @@
 
 NPCs will say a random text when they have no more dialogue. The text is chosen from a list. This action is checked every 30 in-game minutes.
 
-**How to use:** Just add an entry with the key "random" to the NPC's vanilla dialogue.
+**How to use:** Just add an entry whose key starts with "random" (NPC's vanilla dialogue).
 
 Example:
 
