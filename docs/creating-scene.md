@@ -17,7 +17,7 @@ Event scenes work just like vanilla scenes (for example, Caroline Tea or the Oni
 ## Adding a Scene
 
 
-First, you must load the scene to `Scenes/<name-of-scene>`. 
+First, you must load the scene to `mistyspring.dynamicdialogues/Scenes/<name-of-scene>`. 
 
 Files with a height of **112** will be automatically centered on the screen.
 
