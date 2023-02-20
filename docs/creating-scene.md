@@ -27,7 +27,7 @@ Files with a height of **112** will be automatically centered on the screen.
 ```
 {
   "Action": "Load",
-  "Target": "Scenes/MyScene",
+  "Target": "mistyspring.dynamicdialogues/Scenes/MyScene",
   "FromFile": "assets/Scenes/MyScene.png"
 }
 ```
